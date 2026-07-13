@@ -57,7 +57,6 @@ pfUI supports and contains language specific code for the following gameclients.
 * [WIM](http://addons.us.to/addon/wim), [WIM (continued)](https://github.com/shirsig/WIM) Give whispers an instant messenger feel
 
 ## Plugins
-* [pfUI-eliteoverlay](https://shagu.org/pfUI-eliteoverlay) Add elite dragons to unitframes
 * [pfUI-fonts](https://shagu.org/pfUI-fonts) Additional fonts for pfUI
 * [pfUI-CustomMedia](https://github.com/mrrosh/pfUI-CustomMedia) Additional textures for pfUI
 * [pfUI-Gryphons](https://github.com/mrrosh/pfUI-Gryphons) Add back the gryphons to your actionbars

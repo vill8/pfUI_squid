@@ -47,6 +47,10 @@ pfUI:RegisterModule("addoncompat", function ()
     ["EzDismount"] = { always },
     ["AddOnOrganizer"] = { always },
     ["Prat"] = { always },
+    ["pfUI-eliteoverlay"] = { always },
+    ["pfUI-eliteoverlay-tbc"] = { always },
+    ["pfUI-eliteoverlay-master"] = { always },
+    ["pfUI-eliteoverlay-wotlk"] = { always },
   }
 
   local require_reload

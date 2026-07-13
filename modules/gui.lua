@@ -897,6 +897,11 @@ pfUI:RegisterModule("gui", "vanilla:tbc", function ()
         "8:" .. T["Slow"],
         "13:" .. T["Very Slow"],
       },
+      ["uf_eliteoverlay_position"] = {
+        "left:" .. T["Left"],
+        "right:" .. T["Right"],
+        "off:" .. T["Disabled"],
+      },
       ["xpanchors"] = {
         "__NONONIL__:" .. T["No Anchor"],
         "pfChatLeft:" .. T["Left Chat Frame"],
@@ -1537,7 +1542,14 @@ pfUI:RegisterModule("gui", "vanilla:tbc", function ()
       CreateConfig(nil, T["Firstrun"], C.global, "profile", "button", function()
         _G["pfUI_init"] = {}
         pfUI.gui:Hide()
-        pfUI.firstrun:NextStep()
+        if not pfUI.firstrun and pfUI.module["firstrun"] then
+          pfUI:LoadModule("firstrun")
+        end
+        if pfUI.firstrun then
+          pfUI.firstrun:NextStep()
+        else
+          message("Unable to load the firstrun wizard.")
+        end
       end, true)
     end)
 
@@ -1619,6 +1631,13 @@ pfUI:RegisterModule("gui", "vanilla:tbc", function ()
       CreateConfig(nil, T["Unit Frame Layout"], C.unitframes, "layout", "dropdown", pfUI.gui.dropdowns.uf_layout)
       CreateConfig(nil, T["Combopoint Width"], C.unitframes, "combowidth")
       CreateConfig(nil, T["Combopoint Height"], C.unitframes, "comboheight")
+      CreateConfig(function()
+        if pfUI.uf and pfUI.uf.frames then
+          for i=1, table.getn(pfUI.uf.frames) do
+            pfUI.uf:UpdateDragon(pfUI.uf.frames[i])
+          end
+        end
+      end, T["Elite Dragon Position"], C.unitframes.eliteoverlay, "position", "dropdown", pfUI.gui.dropdowns.uf_eliteoverlay_position)
       CreateConfig(nil, T["Show Resting"], C.unitframes.player, "showRest", "checkbox")
       CreateConfig(nil, T["Enable Energy Ticks"], C.unitframes.player, "energy", "checkbox")
       CreateConfig(nil, T["Enable Mana Ticks"], C.unitframes.player, "manatick", "checkbox")

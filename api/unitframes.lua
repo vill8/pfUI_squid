@@ -14,10 +14,31 @@ end)
 pfUI.uf.frames = {}
 pfUI.uf.delayed = {}
 
+pfUI.uf.dragonupdater = CreateFrame("Frame", nil, pfUI.uf)
+pfUI.uf.dragonupdater:RegisterEvent("PLAYER_TARGET_CHANGED")
+pfUI.uf.dragonupdater:RegisterEvent("PLAYER_ENTERING_WORLD")
+pfUI.uf.dragonupdater:SetScript("OnEvent", function()
+  if pfUI.uf.target then
+    pfUI.uf:UpdateDragon(pfUI.uf.target)
+  end
+end)
+
 -- slash command to toggle unitframe test mode
 _G.SLASH_PFTEST1, _G.SLASH_PFTEST2 = "/pftest", "/pfuftest"
 _G.SlashCmdList.PFTEST = function()
   pfUI.uf.showall = not pfUI.uf.showall
+end
+
+_G.SLASH_PFDRAGON1 = "/pfdragon"
+_G.SlashCmdList.PFDRAGON = function()
+  if not pfUI.uf.target then
+    DEFAULT_CHAT_FRAME:AddMessage("pfUI target frame missing")
+    return
+  end
+
+  pfUI.uf:UpdateDragon(pfUI.uf.target)
+  local t = pfUI.uf.target
+  DEFAULT_CHAT_FRAME:AddMessage("elite="..tostring(UnitClassification("target")).." shown="..tostring(t.dragon and t.dragon:IsShown()).." width="..tostring(t:GetWidth()).." pos="..tostring(C.unitframes.eliteoverlay and C.unitframes.eliteoverlay.position))
 end
 
 local scanner
@@ -1482,12 +1503,82 @@ local pfDebuffColors = {
   ["Disease"] = { 0.9, 0.7, 0.2, 1 }
 }
 
+function pfUI.uf:UpdateDragon(unit)
+  if C.unitframes.disable == "1" then return end
+
+  local position = (C.unitframes.eliteoverlay and C.unitframes.eliteoverlay.position) or "right"
+  local pos = string.upper(position)
+  local invert = position == "right" and 1 or -1
+  local unitstr = (unit and unit.label or "") .. (unit and unit.id or "")
+
+  if unitstr == "" or position == "off" then
+    if unit and unit.dragon then unit.dragon:Hide() end
+    return
+  end
+
+  if not unit or not unit.hp then return end
+
+  local size = unit:GetWidth() / 1.5
+  if size <= 0 then size = 130 end
+  local elite = UnitClassification(unitstr)
+  local tex = pfUI.path .. "\\img\\"
+
+  unit.dragon = unit.dragon or CreateFrame("Frame", nil, unit)
+  unit.dragon:SetAllPoints(unit)
+  unit.dragon:SetFrameLevel(8)
+
+  unit.dragonTop = unit.dragonTop or unit.dragon:CreateTexture(nil, "OVERLAY")
+  unit.dragonBottom = unit.dragonBottom or unit.dragon:CreateTexture(nil, "OVERLAY")
+
+  unit.dragonTop:ClearAllPoints()
+  unit.dragonTop:SetWidth(size)
+  unit.dragonTop:SetHeight(size)
+  unit.dragonTop:SetPoint("TOP"..pos, unit, "TOP"..pos, invert*size/5, size/7)
+
+  unit.dragonBottom:ClearAllPoints()
+  unit.dragonBottom:SetWidth(size)
+  unit.dragonBottom:SetHeight(size)
+  unit.dragonBottom:SetPoint("BOTTOM"..pos, unit, "BOTTOM"..pos, invert*size/5.2, -size/2.98)
+
+  if elite == "worldboss" then
+    unit.dragonTop:SetTexture(tex.."TOP_GOLD_"..pos)
+    unit.dragonTop:SetVertexColor(.85,.15,.15,1)
+    unit.dragonBottom:SetTexture(tex.."BOTTOM_GOLD_"..pos)
+    unit.dragonBottom:SetVertexColor(.85,.15,.15,1)
+    unit.dragon:Show()
+  elseif elite == "rareelite" then
+    unit.dragonTop:SetTexture(tex.."TOP_GOLD_"..pos)
+    unit.dragonTop:SetVertexColor(1,1,1,1)
+    unit.dragonBottom:SetTexture(tex.."BOTTOM_GOLD_"..pos)
+    unit.dragonBottom:SetVertexColor(1,1,1,1)
+    unit.dragon:Show()
+  elseif elite == "elite" then
+    unit.dragonTop:SetTexture(tex.."TOP_GOLD_"..pos)
+    unit.dragonTop:SetVertexColor(.75,.6,0,1)
+    unit.dragonBottom:SetTexture(tex.."BOTTOM_GOLD_"..pos)
+    unit.dragonBottom:SetVertexColor(.75,.6,0,1)
+    unit.dragon:Show()
+  elseif elite == "rare" then
+    unit.dragonTop:SetTexture(tex.."TOP_GRAY_"..pos)
+    unit.dragonTop:SetVertexColor(.8,.8,.8,1)
+    unit.dragonBottom:SetTexture(tex.."BOTTOM_GRAY_"..pos)
+    unit.dragonBottom:SetVertexColor(.8,.8,.8,1)
+    unit.dragon:Show()
+  else
+    unit.dragon:Hide()
+  end
+end
+
 function pfUI.uf:RefreshUnit(unit, component)
   -- break early on misconfigured UF's
   if not unit.label then return end
   if not unit.hp then return end
   if not unit.power then return end
   if not unit.id then unit.id = "" end
+
+  -- update elite dragons before regular refresh (like legacy eliteoverlay)
+  pfUI.uf:UpdateDragon(unit)
+
   local component = component or ""
 
   -- don't update scanner activity
